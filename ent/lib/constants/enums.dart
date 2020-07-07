@@ -1,0 +1,9 @@
+enum DataFetchState {
+  IS_LOADING,
+  IS_LOADED,
+  ERROR_ENCOUNTERED,
+  NO_IMAGE_DATA,
+  NO_VIDEO_DATA
+}
+
+enum ThemeModes { DARK_THEME, LIGHT_THEME, SYSTEM_THEME }
