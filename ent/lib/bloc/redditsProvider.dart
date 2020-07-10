@@ -1,3 +1,4 @@
+import 'package:ent/errors.dart/serviceErrors.dart';
 import 'package:ent/models/redditModel.dart';
 import 'package:ent/utils/sharedPrefData.dart';
 import 'package:flutter/foundation.dart';
@@ -14,7 +15,8 @@ class RedditsModel extends ChangeNotifier {
 
   final String BASE_URL = "https://www.reddit.com/";
 
-  DataFetchState _dataFetchState;
+  ImageDataFetchState _imageDataFetchState;
+  VideoDataFetchState _videoDataFetchState;
 
   List<String> _subreddits = [];
   List<Post> _imagePosts = [];
@@ -23,78 +25,83 @@ class RedditsModel extends ChangeNotifier {
   List<String> get getSubreddits => _subreddits;
   List<Post> get imagePosts => _imagePosts;
   List<Post> get videoPosts => _videoPosts;
-  DataFetchState get dataFetchState => _dataFetchState;
 
-  getPosts(String subreddit) async {
-    // _dataFetchState = DataFetchState.IS_LOADING;
-    notifyListeners();
+  ImageDataFetchState get imageDataFetchState => _imageDataFetchState;
+  VideoDataFetchState get videoDataFetchState => _videoDataFetchState;
+
+  Future<void> getPosts(List<String> subreddits) async {
     try {
-      final response = await http.get("$BASE_URL/r/$subreddit.json");
+      for (String subreddit in subreddits) {
+        try {
+          final response = await http.get("$BASE_URL/r/$subreddit.json");
 
-      if (response.statusCode == 200) {
-        print(response.body);
-        Reddit reddit = Reddit.fromJson(json.decode(response.body));
-        print(reddit);
-        reddit.data.children.forEach((child) {
-          if (child.post.postHint == "image") {
-            _imagePosts.add(child.post);
-          }
-          if (child.post.isVideo) {
-            _videoPosts.add(child.post);
-          }
-        });
-        print("postsLength: " + _imagePosts.length.toString());
-        // _dataFetchState = DataFetchState.IS_LOADED;
-
-        notifyListeners();
-      } else {
-        _dataFetchState = DataFetchState.ERROR_ENCOUNTERED;
-        notifyListeners();
+          if (response.statusCode == 200) {
+            Reddit reddit = Reddit.fromJson(json.decode(response.body));
+            reddit.data.children.forEach((child) {
+              if (child.post.postHint == "image") {
+                _imagePosts.add(child.post);
+              }
+              if (child.post.isVideo) {
+                _videoPosts.add(child.post);
+              }
+            });
+          } else {}
+        } catch (e) {
+          throw e;
+        }
       }
     } catch (e) {
-      _dataFetchState = DataFetchState.ERROR_ENCOUNTERED;
-      print("error");
+      throw e;
+    }
+  }
+
+  transactionWithSP() async {
+    try {
+      _imagePosts = [];
+      _videoPosts = [];
+
+      _imageDataFetchState = ImageDataFetchState.IS_IMAGE_DATA_LOADING;
+      _videoDataFetchState = VideoDataFetchState.IS_VIDEO_DATA_LOADING;
+
+      notifyListeners();
+
+      final res = await fetchSubredditsFromSP();
+
+      _subreddits = res;
+
+
+      getPosts(res).then((value) {
+        _imageDataFetchState = _imagePosts.isNotEmpty
+            ? ImageDataFetchState.IS_IMAGE_DATA_LOADED
+            : ImageDataFetchState.NO_IMAGE_DATA;
+
+        _videoDataFetchState = _videoPosts.isNotEmpty
+            ? VideoDataFetchState.IS_VIDEO_DATA_LOADED
+            : VideoDataFetchState.NO_VIDEO_DATA;
+
+        notifyListeners();
+      });
+    } catch (e) {
+      _imageDataFetchState =
+          ImageDataFetchState.ERROR_ENCOUNTERED_WHILE_FETCHING_IMAGE_DATA;
+      _videoDataFetchState =
+          VideoDataFetchState.ERROR_ENCOUNTERED_WHILE_FETCHING_VIDEO_DATA;
       notifyListeners();
     }
   }
 
-  Future<void> transactionWithSP() async {
-    // SharedPreferences prefs = await SharedPreferences.getInstance();
-    // _subreddits = prefs.getStringList("subreddits") ?? [];
-    _dataFetchState = DataFetchState.IS_LOADING;
-    _imagePosts = [];
-    _videoPosts = [];
-    notifyListeners();
-    fetchSubredditsFromSP().then((value) {
-      _subreddits = value ?? [];
-      _subreddits.forEach((subreddit) {
-        getPosts(subreddit);
-      });
-      _dataFetchState = _imagePosts.length == 0
-          ? DataFetchState.NO_IMAGE_DATA
-          : DataFetchState.IS_LOADED;
-
-      notifyListeners();
-    });
+  addSubreddit(subreddit) {
+    _subreddits.add(subreddit);
+    addSubredditToSP(subreddit).then((value) => transactionWithSP());
   }
 
-  addSubreddit(reddit) {
-    _subreddits.add(reddit);
-    addSubredditToSP(reddit);
-    transactionWithSP();
-    notifyListeners();
-  }
-
-  removeSubreddit(reddit) {
-    _subreddits.remove(reddit);
-    removeSubredditFromSP(reddit);
-    transactionWithSP();
-    notifyListeners();
+  removeSubreddit(subreddit) {
+    _subreddits.remove(subreddit);
+    removeSubredditFromSP(subreddit).then((value) => transactionWithSP());
   }
 
   clearAllSubreddits() {
-    _subreddits = [];
-    clearAllSubredditsFromSP();
-    notifyListeners();
+    _subreddits.clear();
+    clearAllSubredditsFromSP().then((value) => transactionWithSP());
   }
 }

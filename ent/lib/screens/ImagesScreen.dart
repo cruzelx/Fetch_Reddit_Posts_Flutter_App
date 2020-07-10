@@ -15,19 +15,9 @@ class ImagesScreen extends StatefulWidget {
 }
 
 class _ImagesScreenState extends State<ImagesScreen> {
-  initializer() async {
-    print("inside initializer");
-    // Provider.of<RedditsModel>(context, listen: false).dataFetchState !=
-    //         DataFetchState.IS_LOADING
-    //     ? Provider.of<RedditsModel>(context, listen: false).transactionWithSP()
-    //     // ignore: unnecessary_statements
-    //     : null;
-  }
-
   @override
   void initState() {
     // TODO: implement initState
-    initializer();
     super.initState();
   }
 
@@ -41,13 +31,12 @@ class _ImagesScreenState extends State<ImagesScreen> {
   Widget build(BuildContext context) {
     final res = Provider.of<RedditsModel>(context);
     final posts = res.imagePosts;
-    print(posts.length);
-    print("imageScreen build");
-    print(res.dataFetchState);
+    print(res.imageDataFetchState);
     return SafeArea(
       child: Scaffold(
-          backgroundColor: Color(0xffe0e0e0),
-          body: res.dataFetchState == DataFetchState.ERROR_ENCOUNTERED
+          body: res.imageDataFetchState ==
+                  ImageDataFetchState
+                      .ERROR_ENCOUNTERED_WHILE_FETCHING_IMAGE_DATA
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -77,7 +66,8 @@ class _ImagesScreenState extends State<ImagesScreen> {
                     ],
                   ),
                 )
-              : res.dataFetchState == DataFetchState.IS_LOADED
+              : res.imageDataFetchState ==
+                      ImageDataFetchState.IS_IMAGE_DATA_LOADED
                   ? ListView.builder(
                       physics: AlwaysScrollableScrollPhysics(),
                       shrinkWrap: true,
@@ -116,7 +106,8 @@ class _ImagesScreenState extends State<ImagesScreen> {
                           ),
                         ]);
                       })
-                  : res.dataFetchState == DataFetchState.IS_LOADING
+                  : res.imageDataFetchState ==
+                          ImageDataFetchState.IS_IMAGE_DATA_LOADING
                       ? Center(
                           child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,

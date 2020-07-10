@@ -23,17 +23,17 @@ class RedditFetcher extends StatelessWidget {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    SharedPreferences.getInstance().then((value) {
-      print(value.getString("theme"));
-      Provider.of<ThemeProvider>(context, listen: false)
-          .setThemeMode(value.getString("theme"));
-    });
+    // SharedPreferences.getInstance().then((value) {
+    //   // print(value.getString("theme"));
+    //   Provider.of<ThemeProvider>(context, listen: false)
+    //       .setThemeMode(value.getString("theme"));
+    // });
     return MaterialApp(
       title: "Ent App",
       home: MainPage(),
-      theme: lightTheme,
-      darkTheme: darkTheme,
-      themeMode: Provider.of<ThemeProvider>(context).themeMode,
+      // theme: lightTheme,
+      // darkTheme: darkTheme,
+      // themeMode: Provider.of<ThemeProvider>(context).themeMode,
       debugShowCheckedModeBanner: false,
     );
   }

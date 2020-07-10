@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-addSubredditToSP(String subreddit) async {
+Future<void> addSubredditToSP(String subreddit) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   List<String> subredditList = prefs.getStringList("subreddits") ?? [];
   if (subredditList.contains(subreddit)) return;
@@ -10,18 +10,17 @@ addSubredditToSP(String subreddit) async {
 
 Future<List<String>> fetchSubredditsFromSP() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  print(prefs.getStringList("subreddits"));
-  return prefs.getStringList("subreddits");
+  return prefs.getStringList("subreddits") ?? <String>[];
 }
 
-removeSubredditFromSP(String subreddit) async {
+Future<void> removeSubredditFromSP(String subreddit) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   List<String> subredditList = prefs.getStringList("subreddits") ?? [];
   subredditList.remove(subreddit);
   prefs.setStringList("subreddits", subredditList);
 }
 
-clearAllSubredditsFromSP() async {
+Future<void> clearAllSubredditsFromSP() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   prefs.remove("subreddits");
 }

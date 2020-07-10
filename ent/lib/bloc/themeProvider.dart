@@ -6,10 +6,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ThemeProvider extends ChangeNotifier {
   ThemeMode _themeMode;
   ThemeProvider() {
-    SharedPreferences.getInstance().then((prefs) {
-      String temp = prefs.getString("theme");
-      _themeMode = checkTheme(temp);
-    });
+    // SharedPreferences.getInstance().then((prefs) {
+    //   String temp = prefs.getString("theme");
+    //   _themeMode = checkTheme(temp);
+    // });
   }
 
   ThemeMode get themeMode => _themeMode;
