@@ -5,9 +5,7 @@ import 'package:provider/provider.dart';
 
 class SubRedditButton extends StatefulWidget {
   final String subreddit;
-  final Function gotoSubreddit;
-  SubRedditButton({Key key, this.gotoSubreddit, this.subreddit})
-      : super(key: key);
+  SubRedditButton({Key key, this.subreddit}) : super(key: key);
   @override
   _SubRedditButtonState createState() => _SubRedditButtonState();
 }
@@ -25,7 +23,7 @@ class _SubRedditButtonState extends State<SubRedditButton> {
       },
       elevation: 5.0,
       textColor: Colors.white,
-      onPressed: widget.gotoSubreddit,
+      onPressed: () {},
       child: _showCloseButton
           ? Row(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -36,6 +34,9 @@ class _SubRedditButtonState extends State<SubRedditButton> {
                     onPressed: () {
                       reddit.removeSubreddit(widget.subreddit);
                       reddit.transactionWithSP();
+                      setState(() {
+                        _showCloseButton = false;
+                      });
                     }),
                 IconButton(
                     icon: Icon(Icons.close, size: 20.0),

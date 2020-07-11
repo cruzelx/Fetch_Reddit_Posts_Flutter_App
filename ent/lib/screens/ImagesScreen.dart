@@ -1,10 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ent/bloc/redditsProvider.dart';
+import 'package:ent/components/fetchStatusWidgets.dart';
 import 'package:ent/components/imageShimmer.dart';
 import 'package:ent/constants/enums.dart';
 import 'package:ent/models/redditModel.dart';
 import 'package:ent/services/fetchRedditPosts.dart';
 import 'package:ent/utils/sharedPrefData.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
@@ -14,7 +16,12 @@ class ImagesScreen extends StatefulWidget {
   _ImagesScreenState createState() => _ImagesScreenState();
 }
 
-class _ImagesScreenState extends State<ImagesScreen> {
+class _ImagesScreenState extends State<ImagesScreen>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -37,35 +44,7 @@ class _ImagesScreenState extends State<ImagesScreen> {
           body: res.imageDataFetchState ==
                   ImageDataFetchState
                       .ERROR_ENCOUNTERED_WHILE_FETCHING_IMAGE_DATA
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Icon(Icons.sentiment_dissatisfied, size: 100.0),
-                      SizedBox(
-                        height: 20.0,
-                      ),
-                      Text("Error Fetching Data"),
-                      SizedBox(height: 15.0),
-                      RaisedButton(
-                          textColor: Colors.white,
-                          color: Colors.blueAccent,
-                          onPressed: () {
-                            res.transactionWithSP();
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Icon(Icons.refresh),
-                              SizedBox(width: 10.0),
-                              Text("Refresh")
-                            ],
-                          )),
-                    ],
-                  ),
-                )
+              ? errorFetchingData(res)
               : res.imageDataFetchState ==
                       ImageDataFetchState.IS_IMAGE_DATA_LOADED
                   ? ListView.builder(
@@ -84,7 +63,7 @@ class _ImagesScreenState extends State<ImagesScreen> {
                                               MediaQuery.of(context)
                                                   .size
                                                   .width -
-                                          16.0),
+                                          20.0),
                               errorWidget: (_, __, ___) => Center(
                                   child: Text("Error Fetching Image Data")),
                               imageUrl: "${source.url}",
@@ -108,30 +87,8 @@ class _ImagesScreenState extends State<ImagesScreen> {
                       })
                   : res.imageDataFetchState ==
                           ImageDataFetchState.IS_IMAGE_DATA_LOADING
-                      ? Center(
-                          child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            SizedBox(
-                              width: 50.0,
-                              height: 50.0,
-                              child: CircularProgressIndicator(),
-                            ),
-                            SizedBox(height: 20.0),
-                            Text("Loading"),
-                          ],
-                        ))
-                      : Center(
-                          child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Icon(Icons.sentiment_neutral, size: 100),
-                            SizedBox(height: 20),
-                            Text("No Data Found")
-                          ],
-                        ))),
+                      ? dataLoading()
+                      : noDataFound()),
     );
   }
 }

@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:ent/errors.dart/serviceErrors.dart';
 import 'package:ent/models/redditModel.dart';
+import 'package:ent/services/connectivityService.dart';
 import 'package:ent/utils/sharedPrefData.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
@@ -7,6 +10,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:ent/constants/enums.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:connectivity/connectivity.dart';
 
 class RedditsModel extends ChangeNotifier {
   RedditsModel() {
@@ -39,10 +43,16 @@ class RedditsModel extends ChangeNotifier {
             Reddit reddit = Reddit.fromJson(json.decode(response.body));
             reddit.data.children.forEach((child) {
               if (child.post.postHint == "image") {
-                _imagePosts.add(child.post);
+                _imagePosts.insert(0, child.post);
               }
               if (child.post.isVideo) {
-                _videoPosts.add(child.post);
+                _videoPosts.insert(0, child.post);
+              }
+
+              if (child.post.postHint == "rich:video" &&
+                  child.post.preview.redditVideoPreview != null) {
+                print(child.post.preview.redditVideoPreview.fallbackUrl);
+                _videoPosts.insert(0, child.post);
               }
             });
           } else {}
@@ -51,7 +61,11 @@ class RedditsModel extends ChangeNotifier {
         }
       }
     } catch (e) {
-      throw e;
+      _imageDataFetchState =
+          ImageDataFetchState.ERROR_ENCOUNTERED_WHILE_FETCHING_IMAGE_DATA;
+      _videoDataFetchState =
+          VideoDataFetchState.ERROR_ENCOUNTERED_WHILE_FETCHING_VIDEO_DATA;
+      notifyListeners();
     }
   }
 
@@ -69,7 +83,6 @@ class RedditsModel extends ChangeNotifier {
 
       _subreddits = res;
 
-
       getPosts(res).then((value) {
         _imageDataFetchState = _imagePosts.isNotEmpty
             ? ImageDataFetchState.IS_IMAGE_DATA_LOADED
@@ -79,6 +92,12 @@ class RedditsModel extends ChangeNotifier {
             ? VideoDataFetchState.IS_VIDEO_DATA_LOADED
             : VideoDataFetchState.NO_VIDEO_DATA;
 
+        notifyListeners();
+      }).catchError((e) {
+        _imageDataFetchState =
+            ImageDataFetchState.ERROR_ENCOUNTERED_WHILE_FETCHING_IMAGE_DATA;
+        _videoDataFetchState =
+            VideoDataFetchState.ERROR_ENCOUNTERED_WHILE_FETCHING_VIDEO_DATA;
         notifyListeners();
       });
     } catch (e) {
@@ -97,11 +116,11 @@ class RedditsModel extends ChangeNotifier {
 
   removeSubreddit(subreddit) {
     _subreddits.remove(subreddit);
-    removeSubredditFromSP(subreddit).then((value) => transactionWithSP());
+    removeSubredditFromSP(subreddit).whenComplete(() => transactionWithSP());
   }
 
   clearAllSubreddits() {
     _subreddits.clear();
-    clearAllSubredditsFromSP().then((value) => transactionWithSP());
+    clearAllSubredditsFromSP().whenComplete(() => transactionWithSP());
   }
 }

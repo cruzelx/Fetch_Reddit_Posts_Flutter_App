@@ -10,28 +10,18 @@ class RedditsScreen extends StatefulWidget {
   _RedditsScreenState createState() => _RedditsScreenState();
 }
 
-class _RedditsScreenState extends State<RedditsScreen> {
+class _RedditsScreenState extends State<RedditsScreen>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
+
   bool _showFab = true;
   TextEditingController _addSubRedditTextController;
   List<String> _subreddits;
-
   @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    _addSubRedditTextController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    _addSubRedditTextController.dispose();
-    super.dispose();
-  }
-
-  @override
+  // ignore: must_call_super
   Widget build(BuildContext context) {
-    print("Main Thread");
     return SafeArea(
       child: Scaffold(
           floatingActionButton: _fab(context),
@@ -46,14 +36,11 @@ class _RedditsScreenState extends State<RedditsScreen> {
                 scrollDirection: Axis.vertical,
                 child: Wrap(
                   spacing: 10.0,
-                  alignment: WrapAlignment.center,
+                  alignment: WrapAlignment.start,
                   children: <Widget>[
                     for (String subreddit
                         in Provider.of<RedditsModel>(context).getSubreddits)
-                      SubRedditButton(
-                        subreddit: subreddit,
-                        gotoSubreddit: () {},
-                      ),
+                      SubRedditButton(subreddit: subreddit),
                   ],
                 ),
               ),

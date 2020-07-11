@@ -12,4 +12,6 @@ enum VideoDataFetchState {
   NO_VIDEO_DATA
 }
 
+enum ConnectivityStatus { Wifi, Mobile, Offline }
+
 enum ThemeModes { DARK_THEME, LIGHT_THEME, SYSTEM_THEME }

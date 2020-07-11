@@ -82,8 +82,9 @@ class Post {
 class Preview {
   bool enabled;
   List<Images> images;
+  RedditVideoPreview redditVideoPreview;
 
-  Preview({this.enabled, this.images});
+  Preview({this.enabled, this.images, this.redditVideoPreview});
 
   Preview.fromJson(Map<String, dynamic> json) {
     enabled = json['enabled'];
@@ -93,6 +94,10 @@ class Preview {
         images.add(new Images.fromJson(v));
       });
     }
+
+    redditVideoPreview = json['reddit_video_preview'] != null
+        ? new RedditVideoPreview.fromJson(json['reddit_video_preview'])
+        : null;
   }
 }
 
@@ -146,5 +151,27 @@ class RedditVideo {
     fallbackUrl = json['fallback_url'];
     width = json['width'];
     height = json['height'];
+  }
+}
+
+class RedditVideoPreview {
+  String fallbackUrl;
+  int height;
+  int width;
+
+  RedditVideoPreview({this.fallbackUrl, this.height, this.width});
+
+  RedditVideoPreview.fromJson(Map<String, dynamic> json) {
+    fallbackUrl = json['fallback_url'];
+    height = json['height'];
+    width = json['width'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['fallback_url'] = this.fallbackUrl;
+    data['height'] = this.height;
+    data['width'] = this.width;
+    return data;
   }
 }
